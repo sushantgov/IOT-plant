@@ -1,0 +1,40 @@
+#include <CayenneSerial.h>
+#define VIRTUAL_H V1
+#define VIRTUAL_T V2
+#define VIRTUAL_M V3
+#define VIRTUAL_L V4
+#define DHTTYPE DHT11
+#define mois_sensor A0
+#define ldr A1
+DHT dht(DHTPIN,DHTTYPE);
+//cayenne or whatever web dashboard token must be filled below
+char token[]="  ";
+
+void setup()
+{
+Serial.begin(9600);
+pinMode(mois_sensor ,INPUT);
+pinMode(ldr, INPUT);
+Cayenne.begin(token);
+dht.begin();
+}
+
+void loop()
+{
+delay(2000);
+Cayenne.run();
+int moisture = analogRead(mois_sensor);
+moisture = map(moisture, 0, 1023, 100, 0);
+int light = analogRead(ldr);
+light = map(light, 0, 1023, 100, 0);
+float h = dht.readHumidity();
+float t = dht.readTemperature();
+if(isnan(h) || isnan(t))
+{
+return;
+}
+Cayenne.virtualWrite(VIRTUAL_H,h);
+Cayenne.virtualWrite(VIRTUAL_T,t);
+Cayenne.virtualWrite(VIRTUAL_M,moisture);
+Cayenne.virtualWrite(VIRTUAL_L, light);
+}
